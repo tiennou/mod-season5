@@ -1,6 +1,6 @@
-const flickering = require('./renderer.utils').flickering;
+import { ServerConfig } from "typed-screeps-server";
 
-module.exports = function(config) {
+export default function(config: ServerConfig) {
     if(config.backend) {
         config.backend.renderer.resources['reactor-core'] = `${config.assetsUrl}reactor-core.png`;
         config.backend.renderer.resources['reactor-edge'] = `${config.assetsUrl}reactor-edge.png`;
@@ -32,7 +32,7 @@ module.exports = function(config) {
                 },
                 {
                     type: 'container',
-                    once: 'true',
+                    once: true,
                     payload: {
                         id: 'rotateContainer'
                     }

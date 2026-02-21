@@ -1,19 +1,27 @@
-const _ = require('lodash');
+import { RoomObject, ServerConfig } from "typed-screeps-server";
+import _ from 'lodash';
 
 const densityProbability = {
     1: 0.1,
     2: 0.5,
     3: 0.9,
     4: 1.0
-};
+} as const;
+
 const mineralDensity = {
     1: 10000,
     2: 22000,
     3: 45000,
     4: 67000
-};
+} as const;
 
-module.exports = function(config) {
+declare module "typed-screeps-server" {
+    interface MineralResources {
+        T: 'T'
+    }
+}
+
+export default function(config: ServerConfig) {
     if(config.engine) {
         config.engine.on('postProcessObject', function (object, roomObjects, roomTerrain, gameTime, roomInfo, bulk, bulkUsers, eventLog, mapView) {
             if (object.type == 'mineral' && object.mineralType == 'T' && !object.mineralAmount) {
@@ -26,7 +34,7 @@ module.exports = function(config) {
     }
 
     if(config.cronjobs) {
-        config.cronjobs.genThorium = [60, async ({utils}) => {
+        config.cronjobs.genThorium = [60, async () => {
             const C = config.common.constants;
             const {db, env} = config.common.storage;
 
@@ -36,9 +44,9 @@ module.exports = function(config) {
             }
             console.log(`Generating thorium...`);
 
-            const common = require('@screeps/common');
+            const common = require('@screeps/common') as typeof import("@screeps/common");
 
-            const roomObjects = await db['rooms.objects'].find({});
+            const roomObjects = await db['rooms.objects'].find({}) as RoomObject[];
             const controllers = _.filter(roomObjects, {type: 'controller'});
             console.log(`${controllers.length} controllers`);
 
@@ -49,14 +57,18 @@ module.exports = function(config) {
                 }
                 console.log(`No thorium in room ${controller.room}`);
     
-                const wallObjects = _.filter(roomObjects,
+                const wallObjects = roomObjects.filter(
                     o => o.room == controller.room &&
                         _.includes(['source', 'mineral', 'controller'], o.type));
 
                 const roomTerrain = await db['rooms.terrain'].findOne({room: controller.room});
                 const terrain = roomTerrain.terrain;
 
-                let mx,my,isWall,hasSpot,hasObjects;
+                let mx: number
+                let my: number;
+                let isWall;
+                let hasSpot;
+                let hasObjects;
                 do {
                     mx = 2 + Math.floor(Math.random()*46);
                     my = 2 + Math.floor(Math.random()*46);
@@ -69,19 +81,19 @@ module.exports = function(config) {
                             }
                         }
                     }
-                    hasObjects = _.any(wallObjects, i => Math.abs(i.x - mx) < 5 && Math.abs(i.y - my) < 5);
+                    hasObjects = wallObjects.some(i => Math.abs(i.x - mx) < 5 && Math.abs(i.y - my) < 5);
                 }
                 while(!isWall || !hasSpot || hasObjects);
 
                 let density;
                 const random = Math.random();
                 for(const _density in densityProbability) {
-                    if (random <= densityProbability[_density]) {
+                    if (random <= densityProbability[_density as unknown as keyof typeof densityProbability]) {
                         density = +_density;
                         break;
                     }
                 }
-                const mineralAmount = mineralDensity[density];
+                const mineralAmount = mineralDensity[density as keyof typeof mineralDensity];
 
                 await db['rooms.objects'].insert({
                     room: controller.room,

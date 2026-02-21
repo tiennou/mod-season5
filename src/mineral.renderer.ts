@@ -1,8 +1,7 @@
-const flickering = require('./renderer.utils').flickering;
-const fg = require('./renderer.utils').fg();
-const bg = require('./renderer.utils').bg();
+import { ServerConfig } from "typed-screeps-server";
+import { flickering, fg, bg } from "./renderer.utils";
 
-module.exports = function(config) {
+export default function(config: ServerConfig) {
     if(config.backend) {
         config.backend.renderer.resources['T'] = `${config.assetsUrl}T.png`;
         config.backend.renderer.resources['extractor'] = `${config.assetsUrl}extractor.svg`;

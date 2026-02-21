@@ -1,6 +1,18 @@
-const _ = require('lodash'), q = require('q');
+import { ServerConfig } from "typed-screeps-server";
 
-module.exports = function (config) {
+declare module "typed-screeps-server" {
+    interface ServerCommon {
+        strongholds: {
+            containerRewards: any;
+            containerAmounts: [number, number, number, number, number, number];
+            coreRewards: { [type: string]: ResourceConstant | ResourceConstant[] };
+            coreDensities: [number, number, number, number, number, number];
+            coreAmounts: [number, number, number, number, number, number];
+        }
+    }
+}
+
+export default function (config: ServerConfig) {
     if(config.common) {
         const C = config.common.constants;
         config.common.strongholds.containerRewards = { T: 10, OH: 2, UL: 2, ZK: 2 };

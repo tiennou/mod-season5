@@ -1,6 +1,26 @@
-const _ = require('lodash');
+import { BaseObject, Id, ServerConfig, User } from "typed-screeps-server";
+import _ from 'lodash';
 
-module.exports = function(config) {
+export interface ReactorObject extends BaseObject {
+    _id?: Id<ReactorObject>;
+    type: "reactor";
+    store: any;
+    launchTime?: number | null;
+    user: Id<User>;
+}
+
+declare module 'typed-screeps-server' {
+    interface RoomObjects {
+        ReactorObject: ReactorObject;
+    }
+
+    interface User {
+        score: number;
+        rank: number;
+    }
+}
+
+export default function(config: ServerConfig) {
     if(config.common) {
         config.common.constants.FIND_REACTORS = 10051;
         config.common.constants.LOOK_REACTORS = "reactor";
@@ -22,10 +42,11 @@ module.exports = function(config) {
                 '</div>'
         };
 
-        config.backend.on('expressPostConfig', function(app, params) {
+        config.backend.on('expressPostConfig', function(app/*, params */) { // XXX: There's actually no `params` here. Server just passes in the Express app.
+            // @ts-expect-error
             const utils = params.utils;
             const previousRespawn = utils.respawnUser;
-            utils.respawnUser = async function(userId) {
+            utils.respawnUser = async function(userId: number) {
                 await config.common.storage.db['rooms.objects'].update({type: 'reactor', user: userId.toString()}, {$unset: {user: 1, launchTime: 1}});
                 return previousRespawn(userId);
             }
@@ -35,7 +56,7 @@ module.exports = function(config) {
     if(config.engine) {
         config.engine.registerCustomObjectPrototype('reactor', 'Reactor', {
             prototypeExtender (prototype, scope, {utils}) {
-                const data = id => {
+                const data = (id: string) => {
                     if (!scope.runtimeData.roomObjects[id]) {
                         throw new Error("Could not find an object with ID " + id);
                     }
@@ -105,12 +126,12 @@ module.exports = function(config) {
 
             const common = require('@screeps/common');
 
-            const roomObjects = await db['rooms.objects'].find({});
+            const roomObjects = await db['rooms.objects'].find({}) as BaseObject[];
             const rooms = await db['rooms'].find({_id: {$regex: '5[NS]\\d?5$'}});
             console.log(`${rooms.length} central rooms`);
 
             for(const room of rooms) {
-                const reactor = _.find(roomObjects, {type: 'reactor', room: room._id});
+                const reactor = _.find(roomObjects, {type: 'reactor', room: room._id}) as unknown as ReactorObject;
                 if(reactor) {
                     continue;
                 }

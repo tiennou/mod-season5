@@ -1,6 +1,24 @@
-const _ = require('lodash');
+import { Id, ServerConfig } from "typed-screeps-server";
+import _ from 'lodash';
+import { ReactorObject } from "./reactor.roomObject";
 
-module.exports = function(config) {
+interface StructureReactor {
+    get id(): Id<ReactorObject>;
+    get pos(): RoomPosition;
+}
+
+interface ClaimReactorIntent {
+    id: Id<ReactorObject>;
+}
+
+declare module 'typed-screeps-server' {
+    interface IntentType {
+        // This doesn't work for some reason?
+        claimReactor: ClaimReactorIntent;
+    }
+}
+
+export default function(config: ServerConfig) {
     const C = config.common.constants;
 
     if(config.engine) {
@@ -14,14 +32,14 @@ module.exports = function(config) {
                     Object.defineProperty(scope.globals.Creep.prototype, 'claimReactor', {
                         configurable: false,
                         enumerable: true,
-                        value: function(target) {
+                        value: function(this: Creep, target: StructureReactor) {
                             if(!this.my) {
                                 return C.ERR_NOT_OWNER;
                             }
                             if(this.spawning) {
                                 return C.ERR_BUSY;
                             }
-                            if(!this.body || !_.some(this.body, p => (p.hits > 0) && (p.type==C.CLAIM))) {
+                            if(!this.body || !this.body.some(p => (p.hits > 0) && (p.type == C.CLAIM))) {
                                 return C.ERR_NO_BODYPART;
                             }
                             if(!target || !target.id || !scope.register.customObjects[target.id] || !(target instanceof scope.globals.Reactor)) {
@@ -61,7 +79,7 @@ module.exports = function(config) {
                     return;
                 }
 
-                if ((_.filter(object.body, i => i.hits > 0 && i.type == C.CLAIM).length) === 0) {
+                if (object.body.filter(i => i.hits > 0 && i.type == C.CLAIM).length === 0) {
                     return;
                 }
 

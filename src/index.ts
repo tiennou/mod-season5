@@ -1,4 +1,12 @@
-module.exports = function (config) {
+import { ServerConfig } from "typed-screeps-server";
+
+declare module "typed-screeps-server" {
+  interface ServerConfig {
+    assetsUrl: string;
+  }
+}
+
+export default function (config: ServerConfig) {
     if (config.backend && config.backend.features) {
         config.backend.features.push({ name: 'season5', version: 1, resourceTypeNames: { T: 'thorium' } })
     }

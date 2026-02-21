@@ -23,5 +23,14 @@
   "homepage": "https://github.com/screeps/mod-season5#readme",
   "dependencies": {
     "lodash": "^3.10.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.25",
+    "@types/lodash": "^3.10.9",
+    "@types/pixi.js": "^4.8.9",
+    "@types/q": "^1.5.8",
+    "@types/screeps": "^3.3.8",
+    "isolated-vm": "^6.0.2",
+    "typed-screeps-server": "^0.0.3"
   }
 }

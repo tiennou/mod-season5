@@ -1,11 +1,12 @@
-const _ = require('lodash');
+import { ServerConfig, StructureTerminalObject } from "typed-screeps-server";
+import _ from 'lodash';
 
-module.exports = function (config) {
+export default function (config: ServerConfig) {
     if(config.engine && config.engine.driver) {
         const oldGetInterRoom = config.engine.driver.getInterRoom;
         config.engine.driver.getInterRoom = async function() {
             const data = await oldGetInterRoom();
-            const terminals = _.filter(data[3], {type: 'terminal'});
+            const terminals = _.filter(data[3], {type: 'terminal'}) as StructureTerminalObject[];
             for(let terminal of terminals) {
                 if(!terminal.send || !terminal.send.targetRoomName) {
                     continue;
