@@ -7,7 +7,16 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipDefaultLibCheck": true,
+    "rootDir": ".",
     "outDir": "./dist",
+    "types": [
+      "express",
+      "lodash",
+      "pixi.js",
+      "q",
+      "screeps",
+      "node"
+    ],
   },
   "include": [
     "src/**/*",
