@@ -12,13 +12,13 @@ export default function(config: ServerConfig) {
                     id: 'foregroundColor',
                     props: ['mineralType'],
                     once: true,
-                    func: fg,
+                    func: fg(),
                 },
                 {
                     id: 'backgroundColor',
                     props: ['mineralType'],
                     once: true,
-                    func: bg,
+                    func: bg(),
                 }
             ],
             processors: [

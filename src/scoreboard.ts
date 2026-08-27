@@ -1,16 +1,15 @@
 import { ServerConfig, User } from "typed-screeps-server";
 import _ from 'lodash';
-import q from 'q';
 
 export default function(config: ServerConfig) {
     if(config.backend && config.backend.router) {
         config.backend.router.get('/scoreboard/list', async (request, response) => {
-            if(!(parseInt(request.query.limit) <= 20)) {
-                return q.reject('invalid params');
+            if(!(parseInt(String(request.query.limit ?? '')) <= 20)) {
+                return Promise.reject('invalid params');
             }
             const length = await config.common.storage.db['users'].count({rank: {$exists: true}});
-            const start = parseInt(request.query.offset||0), end = parseInt(request.query.offset||0) + parseInt(request.query.limit);
-            const query = {rank: {$exists: true, $gt: start, $lte: end}};
+            const start = parseInt(String(request.query.offset ?? 0)), end = parseInt(String(request.query.offset ?? 0)) + parseInt(String(request.query.limit));
+            const query: Record<string, unknown> = {rank: {$exists: true, $gt: start, $lte: end}};
             if(request.query.search) {
                 query.username = { $regex: request.query.search };
             }
@@ -33,7 +32,7 @@ export default function(config: ServerConfig) {
                     promises.push(config.common.storage.db['users'].update({_id: sortedUsers[i]._id}, {$set: {rank}}));
                 }
             }
-            await q.all(promises);
+            await Promise.all(promises);
         }];
     }
 };

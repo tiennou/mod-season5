@@ -1,4 +1,4 @@
-import { ServerConfig, StructureTerminalObject } from "typed-screeps-server";
+import { ServerConfig, RawStructureTerminal } from "typed-screeps-server";
 import _ from 'lodash';
 
 export default function (config: ServerConfig) {
@@ -6,7 +6,7 @@ export default function (config: ServerConfig) {
         const oldGetInterRoom = config.engine.driver.getInterRoom;
         config.engine.driver.getInterRoom = async function() {
             const data = await oldGetInterRoom();
-            const terminals = _.filter(data[3], {type: 'terminal'}) as StructureTerminalObject[];
+            const terminals = _.filter(data[3], {type: 'terminal'}) as RawStructureTerminal[];
             for(let terminal of terminals) {
                 if(!terminal.send || !terminal.send.targetRoomName) {
                     continue;

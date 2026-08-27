@@ -1,35 +1,57 @@
 import { ServerConfig } from "typed-screeps-server";
+import path from 'path';
+
+import thorium from './thorium';
+import mineralRoomObject from './mineral.roomObject';
+import mineralRenderer from './mineral.renderer';
+import reactorRoomObject from './reactor.roomObject';
+import reactorRenderer from './reactor.renderer';
+import creepClaimReactor from './creep.claimReactor';
+import terminalRestriction from './terminal-restriction';
+import strongholdRewards from './stronghold-rewards';
+import decorations from './decorations';
+import scoreboard from './scoreboard';
 
 declare module "typed-screeps-server" {
-  interface ServerConfig {
-    assetsUrl: string;
-  }
+    interface ServerConfig {
+        assetsUrl: string;
+    }
 }
 
-export default function (config: ServerConfig) {
-    if (config.backend && config.backend.features) {
+export = function (config: ServerConfig) {
+    config.assetsUrl = '{ASSETS_URL}season5/';
+    
+    if (config.backend) {
+        config.backend.features ??= []
         config.backend.features.push({ name: 'season5', version: 1, resourceTypeNames: { T: 'thorium' } })
+        
+        config.backend.on('expressPreConfig', (app) => {
+            const express = require.main!.require('express') as typeof import('express');
+            const assetsDir = path.join(__dirname, '..', 'assets');
+            app.use('/assets/season5', (_req, res, next) => {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                next();
+            }, express.static(assetsDir));
+        });
     }
-
-    config.assetsUrl = 'https://s3.amazonaws.com/static.screeps.com/season5/';
-
-    try{
+    
+    try {
         require('./official-specific')(config);
     } catch {}
-
-    require('./thorium')(config);
-
-    require('./mineral.roomObject')(config);
-    require('./mineral.renderer')(config);
-
-    require('./reactor.roomObject')(config);
-    require('./reactor.renderer')(config);
-
-    require('./creep.claimReactor')(config);
-
-    require('./terminal-restriction')(config);
-    require('./stronghold-rewards')(config);
-
-    require('./decorations')(config);
-    require('./scoreboard')(config);
+    
+    thorium(config);
+    
+    mineralRoomObject(config);
+    mineralRenderer(config);
+    
+    reactorRoomObject(config);
+    reactorRenderer(config);
+    
+    creepClaimReactor(config);
+    
+    terminalRestriction(config);
+    strongholdRewards(config);
+    
+    decorations(config);
+    scoreboard(config);
 };

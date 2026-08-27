@@ -1,14 +1,8 @@
 import { ServerConfig } from "typed-screeps-server";
 
-declare module "typed-screeps-server" {
-    interface ServerCommon {
-        strongholds: {
-            containerRewards: any;
-            containerAmounts: [number, number, number, number, number, number];
-            coreRewards: { [type: string]: ResourceConstant | ResourceConstant[] };
-            coreDensities: [number, number, number, number, number, number];
-            coreAmounts: [number, number, number, number, number, number];
-        }
+declare module 'typed-screeps-server' {
+    interface DepositResources {
+        nuked: 'nuked';
     }
 }
 
@@ -41,7 +35,7 @@ export default function (config: ServerConfig) {
     }
 
     if (config.cronjobs) {
-        config.cronjobs.updateInvaderCore = [60, async ({utils}) => {
+        config.cronjobs.updateInvaderCore = [60, async () => {
             const {db} = config.common.storage;
             const coresToUpdate = await db['rooms.objects'].find({type: 'invaderCore', depositType: {$nin: Object.keys(config.common.strongholds.coreRewards)}});
             for(let core of coresToUpdate) {

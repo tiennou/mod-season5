@@ -2,9 +2,10 @@
   "name": "@screeps/mod-season5",
   "version": "1.0.3",
   "description": "Season 5 rules",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "compile": "tsc -p tsconfig.json",
+    "compile:watch": "tsc -p tsconfig.json --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -32,7 +33,7 @@
     "@types/q": "^1.5.8",
     "@types/screeps": "^3.3.8",
     "isolated-vm": "^6.0.2",
-    "typed-screeps-server": "^0.0.3",
+    "typed-screeps-server": "^0.0.5",
     "typescript": "^6.0.3"
   }
 }

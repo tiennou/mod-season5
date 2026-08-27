@@ -1,7 +1,8 @@
 import { RoomName, ServerConfig } from "typed-screeps-server";
 
 export default function(config: ServerConfig) {
-  if(config.backend) {
+  const { backend } = config;
+  if (backend) {
     function getDecorations(location: { room: RoomName, shard: string }) {
       const wall = {
         "active": {
@@ -57,9 +58,9 @@ export default function(config: ServerConfig) {
       return [floor, wall];
     };
     
-    config.backend.on('expressPostConfig', function(app) {
-      config.backend.router.get('/game/room-decorations', (request, response) => {
-        const decorations = getDecorations(request.query);
+    backend.on('expressPostConfig', function(app) {
+      backend.router.get('/game/room-decorations', (request, response) => {
+        const decorations = getDecorations(request.query as { room: RoomName, shard: string });
         console.log(`Decorations get`);
         response.json({ ok: 1, decorations });
       });

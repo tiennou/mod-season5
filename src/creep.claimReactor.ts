@@ -1,20 +1,24 @@
-import { Id, ServerConfig } from "typed-screeps-server";
+import { AnyId, RawId, ServerConfig } from "typed-screeps-server";
 import _ from 'lodash';
-import { ReactorObject } from "./reactor.roomObject";
-
-interface StructureReactor {
-    get id(): Id<ReactorObject>;
-    get pos(): RoomPosition;
-}
+import { RawReactor, Reactor } from "./reactor.roomObject";
 
 interface ClaimReactorIntent {
-    id: Id<ReactorObject>;
+    id: AnyId<RawReactor>;
 }
 
 declare module 'typed-screeps-server' {
     interface IntentType {
-        // This doesn't work for some reason?
         claimReactor: ClaimReactorIntent;
+    }
+
+    interface Globals {
+        Reactor: _ConstructorById<Reactor>;
+    }
+}
+
+declare global {
+    interface Creep {
+        claimReactor(target: Reactor): OK | ERR_NOT_OWNER | ERR_BUSY | ERR_NO_BODYPART | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE;
     }
 }
 
@@ -22,6 +26,7 @@ export default function(config: ServerConfig) {
     const C = config.common.constants;
 
     if(config.engine) {
+        // @ts-expect-error bootstrap hook — not a registered room object kind
         config.engine.registerCustomObjectPrototype('dummy', '__dummy', {
             parent: 'Object',
             properties: {},
@@ -32,7 +37,7 @@ export default function(config: ServerConfig) {
                     Object.defineProperty(scope.globals.Creep.prototype, 'claimReactor', {
                         configurable: false,
                         enumerable: true,
-                        value: function(this: Creep, target: StructureReactor) {
+                        value: function(this: Creep, target: Reactor) {
                             if(!this.my) {
                                 return C.ERR_NOT_OWNER;
                             }
@@ -64,12 +69,11 @@ export default function(config: ServerConfig) {
 
         config.engine.customIntentTypes['claimReactor'] = {id: 'string'};
 
-        // Add "incCounter" command processing
         config.engine.on('processObjectIntents', function(object, userId, objectIntents, roomObjects, roomTerrain, gameTime, roomInfo, bulk, bulkUsers) {
 
             if (object.type == 'creep' && objectIntents.claimReactor) {
                 const intent = objectIntents.claimReactor;
-                const target = roomObjects[intent.id];
+                const target = roomObjects[intent.id as RawId<RawReactor>];
 
                 if(!target || target.type != 'reactor') {
                     return;
