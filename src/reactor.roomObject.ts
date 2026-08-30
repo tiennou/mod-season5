@@ -97,6 +97,11 @@ export default function(config: ServerConfig) {
 
 		config.engine.on('postProcessObject', function (object, roomObjects, roomTerrain, gameTime, roomInfo, bulk, bulkUsers, eventLog, mapView) {
 			if (object.type == 'reactor') {
+				if (!object.store) {
+					object.store = {};
+					bulk.update(object, {store: {}});
+				}
+
 				if(!object.store.T && object.launchTime) {
 					delete object.launchTime;
 					bulk.update(object, {launchTime: null});
