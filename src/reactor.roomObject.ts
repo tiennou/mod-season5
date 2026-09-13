@@ -102,25 +102,31 @@ export default function(config: ServerConfig) {
 					bulk.update(object, {store: {}});
 				}
 
-				if(!object.store.T && object.launchTime) {
-					delete object.launchTime;
-					bulk.update(object, {launchTime: null});
-					return;
-				}
+				const thorium = Math.max(0, Number(object.store.T) || 0);
 
-				if(object.user) {
-					if(object.store.T) {
-						if(!object.launchTime) {
-							object.launchTime = gameTime;
-							bulk.update(object, {launchTime: object.launchTime});
-						}
-
-						bulk.update(object, {store: {T: object.store.T - 1}});
-						object.store.T--;
-
-						const score = 1+Math.floor(Math.log10(1+gameTime-object.launchTime));
-						bulkUsers.inc(object.user, 'score', score);
+				if (thorium <= 0) {
+					// empty or an invalid store - cleanup the store if needed and stop the streak
+					if (object.store.T !== undefined && object.store.T !== 0) {
+						object.store.T = 0;
+						bulk.update(object, {store: {T: 0}});
 					}
+					if (object.launchTime) {
+						delete object.launchTime;
+						bulk.update(object, {launchTime: null});
+					}
+				} else if (object.user) {
+					// not empty and claimed; running, decrement a thorium and add score
+					if(!object.launchTime) {
+						object.launchTime = gameTime;
+						bulk.update(object, {launchTime: object.launchTime});
+					}
+
+					const next_thorium = thorium - 1;
+					object.store.T = next_thorium;
+					bulk.update(object, {store: {T: next_thorium}});
+
+					const score = 1+Math.floor(Math.log10(1+gameTime-object.launchTime));
+					bulkUsers.inc(object.user, 'score', score);
 				}
 
 				roomInfo.active = true;
